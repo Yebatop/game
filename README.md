@@ -1,2 +1,3 @@
 # game
-простенькая игруля yebatop.github.io
+простенькая игруля 
+https://yebatop.github.io/game/
