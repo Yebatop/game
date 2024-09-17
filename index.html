@@ -2,131 +2,254 @@
 <html lang="ru">  
 <head>  
     <meta charset="UTF-8">  
-    <title>Мини-игры</title>  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Мини-Игры</title>  
     <style>  
         body {  
-            font-family: Arial, sans-serif;  
-            background: #f2f2f2;  
+            font-family: 'Arial', sans-serif;  
+            background-color: #f4f4f4;  
             margin: 0;  
             padding: 20px;  
+            display: flex;  
+            flex-direction: column;  
+            align-items: center;  
+        }  
+        h1 {  
+            color: #333;  
         }  
         .game {  
-            display: none;  
-            border: 1px solid #ddd;  
-            padding: 10px;  
-            margin: 10px 0;  
-            background: #fff;  
+            background: white;  
+            border-radius: 8px;  
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);  
+            margin: 20px;  
+            padding: 20px;  
+            width: 300px;  
+            text-align: center;  
         }  
         button {  
-            margin: 5px;  
+            background-color: #3498db;  
+            color: white;  
+            border: none;  
+            border-radius: 5px;  
+            padding: 10px;  
+            cursor: pointer;  
+            transition: background 0.3s;  
+            width: 100%;  
+        }  
+        button:hover {  
+            background-color: #2980b9;  
+        }  
+        input {  
+            padding: 10px;  
+            margin-top: 10px;  
+            border-radius: 5px;  
+            border: 1px solid #ccc;  
+            width: calc(100% - 20px);  
+        }  
+        .tic-tac-toe {  
+            display: grid;  
+            grid-template-columns: repeat(3, 1fr);  
+            gap: 10px;  
+        }  
+        .tic-tac-toe button {  
+            height: 60px;  
+            font-size: 24px;  
         }  
     </style>  
 </head>  
 <body>  
 
-<h1>Мини-игры</h1>  
-<button onclick="showGame('puzzle')">Пазл</button>  
-<button onclick="showGame('quiz')">Викторина</button>  
-<button onclick="showGame('findDifference')">Найди отличие</button>  
-<button onclick="showGame('reactionGame')">Игровая на реакцию</button>  
+<h1>Мини-Игры</h1>  
 
-<!-- Пазл -->  
-<div id="puzzle" class="game">  
-    <h2>Пазл</h2>  
-    <p>Соберите изображение (Упрощенная версия):</p>  
-    <img id="puzzleImage" src="https://via.placeholder.com/150" alt="Puzzle" style="display: none;">  
-    <canvas id="puzzleCanvas" width="150" height="150"></canvas>  
-    <button onclick="shufflePuzzle()">Перемешать</button>  
+<div class="game" id="guessGame">  
+    <h2>Угадай число</h2>  
+    <input type="number" id="guessInput" placeholder="Введите число от 1 до 100">  
+    <button onclick="guessTheNumber()">Угадать</button>  
+    <p id="guessMessage"></p>  
 </div>  
 
-<!-- Викторина -->  
-<div id="quiz" class="game">  
+<div class="game" id="quizGame">  
     <h2>Викторина</h2>  
-    <p>Какой цвет смешивают с желтым, чтобы получить зеленый?</p>  
-    <button onclick="checkAnswer(true)">Синий</button>  
-    <button onclick="checkAnswer(false)">Красный</button>  
+    <button onclick="startQuiz()">Начать викторину</button>  
+    <p id="quizMessage"></p>  
 </div>  
 
-<!-- Найди отличие -->  
-<div id="findDifference" class="game">  
-    <h2>Найди отличие</h2>  
-    <p>(Изображения будут тут...)</p>  
-    <button onclick="alert('Найди 2 отличия!')">Начать поиск</button>  
+<div class="game" id="rpsGame">  
+    <h2>Камень, Ножницы, Бумага</h2>  
+    <button onclick="playRPS('камень')">Камень</button>  
+    <button onclick="playRPS('ножницы')">Ножницы</button>  
+    <button onclick="playRPS('бумага')">Бумага</button>  
+    <p id="rpsMessage"></p>  
 </div>  
 
-<!-- Игра на реакцию -->  
-<div id="reactionGame" class="game">  
-    <h2>Тест на реакцию</h2>  
-    <p>Нажмите кнопку, когда она изменит цвет!</p>  
-    <button id="reactionButton" onclick="checkReaction()">Нажми меня!</button>  
+<div class="game" id="ticTacToeGame">  
+    <h2>Крестики-нолики</h2>  
+    <div class="tic-tac-toe" id="ticTacToeBoard"></div>  
+    <button onclick="resetTicTacToe()">Сбросить игру</button>  
+    <p id="ticTacToeMessage"></p>  
+</div>  
+
+<div class="game" id="lightsGame">  
+    <h2>Светофор</h2>  
+    <button onclick="changeLight()">Включить светофор</button>  
+    <p id="lightMessage">Светофор выключен.</p>  
 </div>  
 
 <script>  
-let isPuzzleShuffled = false;  
+    // Угадай число  
+    let randomNumber = Math.floor(Math.random() * 100) + 1;  
+    let attempts = 0;  
 
-// Показать выбранную игру  
-function showGame(game) {  
-    const games = document.querySelectorAll('.game');  
-    games.forEach(g => g.style.display = 'none');  
-    document.getElementById(game).style.display = 'block';  
+    function guessTheNumber() {  
+        const userGuess = parseInt(document.getElementById('guessInput').value);  
+        attempts++;  
+        const message = document.getElementById('guessMessage');  
 
-    if (game === 'puzzle') {  
-        initPuzzle();  
+        if (userGuess < randomNumber) {  
+            message.innerText = "Слишком мало! Попробуйте еще раз.";  
+        } else if (userGuess > randomNumber) {  
+            message.innerText = "Слишком много! Попробуйте еще раз.";  
+        } else {  
+            message.innerText = `Поздравляю! Вы угадали число ${randomNumber} за ${attempts} попыток.`;  
+            resetGuessGame();  
+        }  
     }  
-}  
 
-// Пазл  
-function initPuzzle() {  
-    const canvas = document.getElementById('puzzleCanvas');  
-    const ctx = canvas.getContext('2d');  
-    const img = new Image();  
-    img.src = "https://via.placeholder.com/150";  
-    img.onload = function() {  
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);  
-    };  
-}  
-
-function shufflePuzzle() {  
-    // Просто для примера выводим изображение  
-    const canvas = document.getElementById('puzzleCanvas');  
-    const ctx = canvas.getContext('2d');  
-    ctx.clearRect(0, 0, canvas.width, canvas.height);  
-    const img = new Image();  
-    img.src = "https://via.placeholder.com/150/ff0000/ffffff?text=Puzzle"; // Пример изображения  
-    img.onload = function() {  
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);  
-    };  
-}  
-
-// Викторина  
-function checkAnswer(isCorrect) {  
-    if (isCorrect) {  
-        alert('Правильно!');  
-    } else {  
-        alert('Неправильно.');  
+    function resetGuessGame() {  
+        randomNumber = Math.floor(Math.random() * 100) + 1;  
+        attempts = 0;  
+        document.getElementById('guessInput').value = '';  
     }  
-}  
 
-// Игра на реакцию  
-function checkReaction() {  
-    const button = document.getElementById('reactionButton');  
-    const startTime = new Date().getTime();  
-    const randomDelay = Math.random() * 3000 + 1000; // от 1 до 4 секунд  
+    // Викторина  
+    const quizQuestions = [  
+        { question: "Какой язык программирования используется для веб-разработки?", answer: "javascript" },  
+        { question: "Сколько континентов на Земле?", answer: "7" },  
+        { question: "Какой цвет получаем, смешивая красный и белый?", answer: "розовый" }  
+    ];  
+    let currentQuestionIndex = 0;  
 
-    button.style.backgroundColor = "red";  
-    button.innerText = "Ждите...";  
+    function startQuiz() {  
+        const question = quizQuestions[currentQuestionIndex];  
+        const userAnswer = prompt(question.question);  
 
-    setTimeout(() => {  
-        button.style.backgroundColor = "green";  
-        button.innerText = "Нажмите!";  
-        document.getElementById('reactionGame').onclick = function() {  
-            const reactionTime = new Date().getTime() - startTime;  
-            alert(`Ваше время реакции: ${reactionTime} мс`);  
-            showGame('reactionGame'); // сброс игры  
-        };  
-    }, randomDelay);  
-}  
+        if (userAnswer.toLowerCase() === question.answer) {  
+            alert("Правильно!");  
+        } else {  
+            alert(`Неправильно. Правильный ответ: ${question.answer}.`);  
+        }  
+        
+        currentQuestionIndex++;  
+        if (currentQuestionIndex < quizQuestions.length) {  
+            startQuiz();  
+        } else {  
+            alert("Это была последняя вопрос. Викторина закончена!");  
+            currentQuestionIndex = 0; // Сброс индекса  
+        }  
+    }  
 
+    // Камень, Ножницы, Бумага  
+    function playRPS(userChoice) {  
+        const options = ["камень", "ножницы", "бумага"];  
+        const computerChoice = options[Math.floor(Math.random() * options.length)];  
+        const message = document.getElementById('rpsMessage');  
+
+        if (userChoice === computerChoice) {  
+            message.innerText = `Ничья! Вы и компьютер выбрали ${computerChoice}.`;  
+        } else if (  
+            (userChoice === "камень" && computerChoice === "ножницы") ||  
+            (userChoice === "ножницы" && computerChoice === "бумага") ||  
+            (userChoice === "бумага" && computerChoice === "камень")  
+        ) {  
+            message.innerText = `Вы выиграли! ${userChoice} бьет ${computerChoice}.`;  
+        } else {  
+            message.innerText = `Вы проиграли! ${computerChoice} бьет ${userChoice}.`;  
+        }  
+    }  
+
+    // Крестики-нолики  
+    let board = ["", "", "", "", "", "", "", "", ""];  
+    let currentPlayer = "X";  
+
+    function createBoard() {  
+        const boardElement = document.getElementById('ticTacToeBoard');  
+        boardElement.innerHTML = '';  
+        board.forEach((cell, index) => {  
+            const button = document.createElement('button');  
+            button.innerText = cell;  
+            button.onclick = () => makeMove(index);  
+            boardElement.appendChild(button);  
+        });  
+    }  
+
+    function makeMove(index) {  
+        if (board[index] === "") {  
+            board[index] = currentPlayer;  
+            if (checkWinner()) {  
+                document.getElementById('ticTacToeMessage').innerText = `Игрок ${currentPlayer} выиграл!`;  
+                disableBoard();  
+            } else if (board.every(cell => cell !== "")) {  
+                document.getElementById('ticTacToeMessage').innerText = "Ничья!";  
+            } else {  
+                currentPlayer = currentPlayer === "X" ? "O" : "X";  
+                createBoard();  
+            }  
+        }  
+    }  
+
+    function checkWinner() {  
+        const winningCombinations = [  
+            [0, 1, 2],  
+            [3, 4, 5],  
+            [6, 7, 8],  
+            [0, 3, 6],  
+            [1, 4, 7],  
+            [2, 5, 8],  
+            [0, 4, 8],  
+            [2, 4, 6],  
+        ];  
+        return winningCombinations.some(combination => {  
+            const [a, b, c] = combination;  
+            return board[a] && board[a] === board[b] && board[a] === board[c];  
+        });  
+    }  
+
+    function disableBoard() {  
+        const boardElement = document.getElementById('ticTacToeBoard');  
+        for (const button of boardElement.children) {  
+            button.onclick = null;  
+        }  
+    }  
+
+    function resetTicTacToe() {  
+        board = ["", "", "", "", "", "", "", "", ""];  
+        currentPlayer = "X";  
+        document.getElementById('ticTacToeMessage').innerText = '';  
+        createBoard();  
+    }  
+
+    // Светофор  
+    let lightState = "выключен";  
+
+    function changeLight() {  
+        const message = document.getElementById('lightMessage');  
+        if (lightState === "выключен") {  
+            lightState = "зеленый";  
+            message.innerText = "Светофор включен: зеленый свет.";  
+        } else if (lightState === "зеленый") {  
+            lightState = "желтый";  
+            message.innerText = "Светофор: желтый свет.";  
+        } else if (lightState === "желтый") {  
+            lightState = "красный";  
+            message.innerText = "Светофор: красный свет.";  
+        } else {  
+            lightState = "выключен";  
+            message.innerText = "Светофор выключен.";  
+        }  
+    }  
+
+    // Инициализация доски крестиков-ноликов  
+    resetTicTacToe();  
 </script>  
 
 </body>  
