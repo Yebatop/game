@@ -2,19 +2,132 @@
 <html lang="ru">  
 <head>  
     <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>Цветовой Кликер</title>  
-    <link rel="stylesheet" href="styles.css">  
+    <title>Мини-игры</title>  
+    <style>  
+        body {  
+            font-family: Arial, sans-serif;  
+            background: #f2f2f2;  
+            margin: 0;  
+            padding: 20px;  
+        }  
+        .game {  
+            display: none;  
+            border: 1px solid #ddd;  
+            padding: 10px;  
+            margin: 10px 0;  
+            background: #fff;  
+        }  
+        button {  
+            margin: 5px;  
+        }  
+    </style>  
 </head>  
 <body>  
-    <div class="container">  
-        <h1>Цветовой Кликер</h1>  
-        <div id="colorSquare" class="color-square"></div>  
-        <div class="score">Счет: <span id="score">0</span></div>  
-        <button id="startBtn">Начать игру</button>  
-        <div id="timer" class="timer">Осталось: <span id="time">10</span> секунд</div>  
-        <div id="message" class="message"></div>  
-    </div>  
-    <script src="script.js"></script>  
+
+<h1>Мини-игры</h1>  
+<button onclick="showGame('puzzle')">Пазл</button>  
+<button onclick="showGame('quiz')">Викторина</button>  
+<button onclick="showGame('findDifference')">Найди отличие</button>  
+<button onclick="showGame('reactionGame')">Игровая на реакцию</button>  
+
+<!-- Пазл -->  
+<div id="puzzle" class="game">  
+    <h2>Пазл</h2>  
+    <p>Соберите изображение (Упрощенная версия):</p>  
+    <img id="puzzleImage" src="https://via.placeholder.com/150" alt="Puzzle" style="display: none;">  
+    <canvas id="puzzleCanvas" width="150" height="150"></canvas>  
+    <button onclick="shufflePuzzle()">Перемешать</button>  
+</div>  
+
+<!-- Викторина -->  
+<div id="quiz" class="game">  
+    <h2>Викторина</h2>  
+    <p>Какой цвет смешивают с желтым, чтобы получить зеленый?</p>  
+    <button onclick="checkAnswer(true)">Синий</button>  
+    <button onclick="checkAnswer(false)">Красный</button>  
+</div>  
+
+<!-- Найди отличие -->  
+<div id="findDifference" class="game">  
+    <h2>Найди отличие</h2>  
+    <p>(Изображения будут тут...)</p>  
+    <button onclick="alert('Найди 2 отличия!')">Начать поиск</button>  
+</div>  
+
+<!-- Игра на реакцию -->  
+<div id="reactionGame" class="game">  
+    <h2>Тест на реакцию</h2>  
+    <p>Нажмите кнопку, когда она изменит цвет!</p>  
+    <button id="reactionButton" onclick="checkReaction()">Нажми меня!</button>  
+</div>  
+
+<script>  
+let isPuzzleShuffled = false;  
+
+// Показать выбранную игру  
+function showGame(game) {  
+    const games = document.querySelectorAll('.game');  
+    games.forEach(g => g.style.display = 'none');  
+    document.getElementById(game).style.display = 'block';  
+
+    if (game === 'puzzle') {  
+        initPuzzle();  
+    }  
+}  
+
+// Пазл  
+function initPuzzle() {  
+    const canvas = document.getElementById('puzzleCanvas');  
+    const ctx = canvas.getContext('2d');  
+    const img = new Image();  
+    img.src = "https://via.placeholder.com/150";  
+    img.onload = function() {  
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);  
+    };  
+}  
+
+function shufflePuzzle() {  
+    // Просто для примера выводим изображение  
+    const canvas = document.getElementById('puzzleCanvas');  
+    const ctx = canvas.getContext('2d');  
+    ctx.clearRect(0, 0, canvas.width, canvas.height);  
+    const img = new Image();  
+    img.src = "https://via.placeholder.com/150/ff0000/ffffff?text=Puzzle"; // Пример изображения  
+    img.onload = function() {  
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);  
+    };  
+}  
+
+// Викторина  
+function checkAnswer(isCorrect) {  
+    if (isCorrect) {  
+        alert('Правильно!');  
+    } else {  
+        alert('Неправильно.');  
+    }  
+}  
+
+// Игра на реакцию  
+function checkReaction() {  
+    const button = document.getElementById('reactionButton');  
+    const startTime = new Date().getTime();  
+    const randomDelay = Math.random() * 3000 + 1000; // от 1 до 4 секунд  
+
+    button.style.backgroundColor = "red";  
+    button.innerText = "Ждите...";  
+
+    setTimeout(() => {  
+        button.style.backgroundColor = "green";  
+        button.innerText = "Нажмите!";  
+        document.getElementById('reactionGame').onclick = function() {  
+            const reactionTime = new Date().getTime() - startTime;  
+            alert(`Ваше время реакции: ${reactionTime} мс`);  
+            showGame('reactionGame'); // сброс игры  
+        };  
+    }, randomDelay);  
+}  
+
+</script>  
+
 </body>  
 </html>
